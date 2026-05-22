@@ -1,0 +1,1311 @@
+
+<!DOCTYPE html> <!-- HTML5 문서 형식 선언 -->
+<html lang="ko"> <!-- 문서 언어를 한국어로 설정 -->
+<head> <!-- 문서 헤드 영역 시작 -->
+<meta charset="UTF-8"> <!-- 문자 인코딩을 UTF-8로 설정 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형 뷰포트 설정 -->
+<style> /* 스타일 시트 시작 */
+
+  * /* 모든 요소에 공통 스타일 적용 */
+  {
+    box-sizing: border-box; /* 패딩과 테두리를 너비 계산에 포함 */
+    margin: 0; /* 바깥 여백 제거 */
+    padding: 0; /* 안쪽 여백 제거 */
+  }
+
+  body /* body 전체 레이아웃 설정 */
+  {
+    font-family: Arial, Helvetica, sans-serif; /* 글꼴 설정 */
+    background: #ffffff; /* 배경색 흰색으로 설정 */
+    color: #333; /* 기본 글자색 설정 */
+    display: flex; /* 플렉스 레이아웃 적용 */
+    justify-content: center; /* 가로 가운데 정렬 */
+    align-items: flex-start; /* 세로 위쪽 기준 정렬 */
+    min-height: 100vh; /* 최소 높이를 화면 전체로 설정 */
+    padding: 16px; /* body 안쪽 여백 설정 */
+  }
+
+  .site /* 계산기 전체를 감싸는 영역 */
+  {
+    width: 100%; /* 가로 너비 100% 설정 */
+    display: flex; /* 플렉스 레이아웃 적용 */
+    flex-direction: column; /* 내부 요소를 세로로 배치 */
+    align-items: center; /* 내부 요소를 가로 가운데 정렬 */
+    justify-content: flex-start; /* 내부 요소를 위에서부터 배치 */
+  }
+
+  .calculator /* 계산기 박스 공통 스타일 */
+  {
+    background: #efefef; /* 계산기 배경색 설정 */
+    border: 1px solid #bdbdbd; /* 계산기 테두리 설정 */
+    border-radius: 18px; /* 모서리를 둥글게 설정 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18); /* 그림자 효과 설정 */
+  }
+
+  .display /* 숫자 표시창 공통 스타일 */
+  {
+    width: 100%; /* 가로 너비 100% */
+    border: 1px solid #a9a9a9; /* 표시창 테두리 설정 */
+    background: #f7f7f7; /* 표시창 배경색 설정 */
+    color: #111; /* 표시 숫자 색상 설정 */
+    text-align: right; /* 숫자 오른쪽 정렬 */
+  }
+
+  .btn /* 모든 버튼 공통 스타일 */
+  {
+    border: 1px solid #c5c5c5; /* 버튼 테두리 설정 */
+    background: #e8e8e8; /* 버튼 기본 배경색 */
+    color: #3a3a3a; /* 버튼 글자색 설정 */
+    font-size: 24px; /* 버튼 글자 크기 설정 */
+    font-weight: 600; /* 버튼 글자 두께 설정 */
+    border-radius: 6px; /* 버튼 모서리 둥글게 설정 */
+    display: flex; /* 버튼 내부 정렬을 위해 플렉스 사용 */
+    align-items: center; /* 버튼 글자 세로 가운데 정렬 */
+    justify-content: center; /* 버튼 글자 가로 가운데 정렬 */
+    user-select: none; /* 드래그 선택 방지 */
+    cursor: pointer; /* 마우스 커서를 손 모양으로 설정 */
+    transition: filter 0.1s, background 0.15s, color 0.15s, border-color 0.15s; /* 클릭 시 밝기 전환과 색상 전환 효과 설정 */
+  }
+
+  .btn:active /* 버튼을 누르고 있을 때 효과 */
+  {
+    filter: brightness(0.88); /* 버튼 클릭 시 살짝 어둡게 표시 */
+  }
+
+  .btn.light /* 밝은 색 버튼 스타일 */
+  {
+    background: #f4f4f4; /* 밝은 회색 배경 적용 */
+  }
+
+  .btn.gray /* 회색 버튼 스타일 */
+  {
+    background: #dddddd; /* 회색 배경 적용 */
+    font-weight: 500; /* 글자 두께 약간 줄임 */
+  }
+
+  .btn.yellow /* 노란색 버튼 스타일 (연산자/결과) */
+  {
+    background: #edc93d; /* 노란색 배경 적용 */
+    color: #111; /* 진한 글자색 적용 */
+  }
+
+  .btn.feature-active /* 활성화된 기능 버튼 색 반전 스타일 */
+  {
+    background: #2f2f2f; /* 배경을 진한 색으로 변경 */
+    color: #f7f7f7; /* 글자색을 밝은 색으로 변경 */
+    border-color: #2f2f2f; /* 테두리도 같은 색으로 변경 */
+  }
+
+  .footer /* 하단 학번·이름 영역 스타일 */
+  {
+    text-align: right; /* 오른쪽 정렬 */
+    color: #444; /* 글자색 설정 */
+    padding-right: 12px; /* 오른쪽 안쪽 여백 설정 */
+  }
+
+  /* ── 가로형(데스크탑) 계산기 스타일 ── */
+
+  .desktop /* 가로형 계산기 전체 스타일 */
+  {
+    display: block; /* 화면에 표시 */
+    width: 700px; /* 가로형 계산기 너비 설정 */
+    padding: 18px 18px 12px 18px; /* 내부 여백 설정 */
+    border-radius: 2px; /* 모서리 둥글기 설정 */
+  }
+
+  .desktop .display /* 가로형 표시창 스타일 */
+  {
+    height: 70px; /* 표시창 높이 설정 */
+    font-size: 22px; /* 표시 숫자 크기 설정 */
+    padding: 8px 14px; /* 표시창 안쪽 여백 설정 */
+    margin-bottom: 6px; /* 아래쪽 여백 설정 */
+    line-height: 52px; /* 숫자 세로 위치 조정 */
+  }
+
+  .desktop-grid /* 가로형 버튼 그리드 배치 */
+  {
+    display: grid; /* 그리드 레이아웃 사용 */
+    grid-template-columns: 88px 88px 88px 88px 88px 88px 88px; /* 7열 너비 설정 */
+    grid-auto-rows: 68px; /* 각 행 높이 설정 */
+    gap: 6px; /* 버튼 사이 간격 설정 */
+    justify-content: start; /* 왼쪽부터 배치 */
+    align-content: start; /* 위쪽부터 배치 */
+  }
+
+  .desktop .footer /* 가로형 하단 문구 스타일 */
+  {
+    font-size: 14px; /* 글자 크기 설정 */
+    padding-top: 6px; /* 위쪽 여백 설정 */
+  }
+
+  .desktop .widget-link /* 가로형 위젯 링크 문구 스타일 */
+  {
+    color: #4a47d5; /* 링크 색상 설정 */
+    font-style: italic; /* 글자 기울임 설정 */
+    text-decoration: underline; /* 밑줄 추가 */
+    text-align: right; /* 오른쪽 정렬 */
+    margin-top: 14px; /* 위쪽 여백 설정 */
+    margin-bottom: 8px; /* 아래쪽 여백 설정 */
+    padding-right: 12px; /* 오른쪽 안쪽 여백 설정 */
+  }
+
+  /* ── 세로형(모바일) 계산기 스타일 ── */
+
+  .mobile /* 세로형 계산기 전체 스타일 */
+  {
+    display: none; /* 기본적으로 숨김 처리 */
+    width: 360px; /* 세로형 계산기 너비 설정 */
+    padding: 18px 14px 12px 14px; /* 내부 여백 설정 */
+  }
+
+  .mobile .display /* 세로형 표시창 스타일 */
+  {
+    height: 64px; /* 표시창 높이 설정 */
+    font-size: 24px; /* 숫자 크기 설정 */
+    padding: 8px 14px; /* 안쪽 여백 설정 */
+    margin-bottom: 18px; /* 아래쪽 여백 설정 */
+    line-height: 46px; /* 숫자 세로 정렬 조정 */
+    border-radius: 2px; /* 모서리 둥글기 설정 */
+  }
+
+  .mobile-grid /* 세로형 버튼 그리드 배치 */
+  {
+    display: grid; /* 그리드 레이아웃 사용 */
+    grid-template-columns: repeat(4, 1fr); /* 4열을 동일한 너비로 설정 */
+    grid-auto-rows: 68px; /* 각 행 높이 설정 */
+    gap: 6px; /* 버튼 사이 간격 설정 */
+  }
+
+  .mobile .btn /* 세로형 버튼 추가 스타일 */
+  {
+    border-radius: 10px; /* 버튼 모서리를 더 둥글게 설정 */
+    font-size: 24px; /* 버튼 글자 크기 설정 */
+  }
+
+  .mobile .footer /* 세로형 하단 문구 스타일 */
+  {
+    font-size: 16px; /* 글자 크기 설정 */
+    padding-top: 18px; /* 위쪽 여백 설정 */
+  }
+
+
+  .feature-guide /* 기능 설명 전체 박스 스타일 */
+  {
+    width: 700px; /* 가로형 계산기와 같은 너비로 설정 */
+    margin-top: 14px; /* 계산기와 설명 사이 간격 설정 */
+    background: #f7f7f7; /* 설명 박스 배경색 설정 */
+    border: 1px solid #d4d4d4; /* 설명 박스 테두리 설정 */
+    border-radius: 14px; /* 설명 박스 모서리를 둥글게 설정 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 설명 박스 그림자 효과 설정 */
+    padding: 16px; /* 설명 박스 안쪽 여백 설정 */
+  }
+
+  .feature-guide-title /* 기능 설명 제목 스타일 */
+  {
+    font-size: 20px; /* 제목 글자 크기 설정 */
+    font-weight: 700; /* 제목 글자 두께 설정 */
+    margin-bottom: 12px; /* 제목 아래 여백 설정 */
+    color: #222; /* 제목 글자색 설정 */
+  }
+
+  .feature-overview /* 개요 카드 스타일 */
+  {
+    background: #ffffff; /* 개요 카드 배경색 설정 */
+    border: 1px solid #e1e1e1; /* 개요 카드 테두리 설정 */
+    border-radius: 12px; /* 개요 카드 모서리를 둥글게 설정 */
+    padding: 12px; /* 개요 카드 안쪽 여백 설정 */
+    margin-bottom: 10px; /* 개요 카드 아래 여백 설정 */
+  }
+
+  .feature-overview-name /* 개요 카드 제목 스타일 */
+  {
+    font-size: 16px; /* 개요 제목 글자 크기 설정 */
+    font-weight: 700; /* 개요 제목 글자 두께 설정 */
+    margin-bottom: 6px; /* 개요 제목 아래 여백 설정 */
+    color: #222; /* 개요 제목 글자색 설정 */
+  }
+
+  .feature-overview-desc /* 개요 카드 설명 스타일 */
+  {
+    font-size: 14px; /* 개요 설명 글자 크기 설정 */
+    line-height: 1.6; /* 개요 설명 줄간격 설정 */
+    color: #444; /* 개요 설명 글자색 설정 */
+  }
+
+  .feature-guide-grid /* 기능 설명 카드 배치 스타일 */
+  {
+    display: grid; /* 카드 배치를 위해 그리드 사용 */
+    grid-template-columns: 1fr; /* 모든 화면에서 한 줄에 카드 하나씩 세로 배치 */
+    gap: 10px; /* 카드 사이 간격 설정 */
+  }
+
+  .feature-card /* 각 기능 설명 카드 스타일 */
+  {
+    background: #ffffff; /* 카드 배경색 설정 */
+    border: 1px solid #e1e1e1; /* 카드 테두리 설정 */
+    border-radius: 12px; /* 카드 모서리를 둥글게 설정 */
+    padding: 12px; /* 카드 안쪽 여백 설정 */
+  }
+
+  .feature-card-name /* 기능 이름 스타일 */
+  {
+    font-size: 16px; /* 기능 이름 글자 크기 설정 */
+    font-weight: 700; /* 기능 이름 글자 두께 설정 */
+    margin-bottom: 6px; /* 기능 이름 아래 여백 설정 */
+    color: #222; /* 기능 이름 글자색 설정 */
+  }
+
+  .feature-card-desc /* 기능 설명 문단 스타일 */
+  {
+    font-size: 14px; /* 설명 글자 크기 설정 */
+    line-height: 1.5; /* 설명 줄간격 설정 */
+    margin-bottom: 6px; /* 설명 아래 여백 설정 */
+    color: #444; /* 설명 글자색 설정 */
+  }
+
+  .feature-card-example /* 기능 예시 문단 스타일 */
+  {
+    font-size: 14px; /* 예시 글자 크기 설정 */
+    line-height: 1.5; /* 예시 줄간격 설정 */
+    color: #333; /* 예시 글자색 설정 */
+  }
+
+  @media (max-width: 768px) /* 화면 너비 768px 이하일 때 적용 */
+  {
+    body /* body 여백 축소 */
+    {
+      padding: 8px; /* 여백을 줄여 작은 화면에 맞춤 */
+    }
+
+    .desktop /* 가로형 계산기 숨김 */
+    {
+      display: none; /* 작은 화면에서 가로형 숨김 */
+    }
+
+    .mobile /* 세로형 계산기 표시 */
+    {
+      display: block; /* 작은 화면에서 세로형 표시 */
+    }
+
+    .feature-guide /* 작은 화면에서 기능 설명 박스 스타일 조정 */
+    {
+      width: 360px; /* 세로형 계산기와 같은 너비로 설정 */
+      padding: 14px; /* 안쪽 여백을 조금 줄여 설정 */
+    }
+
+    .feature-guide-title /* 작은 화면에서 제목 크기 조정 */
+    {
+      font-size: 18px; /* 제목 글자 크기 축소 */
+    }
+
+  }
+
+</style> <!-- 스타일 시트 끝 -->
+</head> <!-- 헤드 영역 끝 -->
+<body> <!-- 바디 영역 시작 -->
+
+<div class="site"> <!-- 전체 계산기를 가운데 정렬하는 래퍼 -->
+
+  <!-- ── 가로형(데스크탑) 계산기 ── -->
+  <div class="calculator desktop"> <!-- 가로형 계산기 컨테이너 -->
+    <div class="display" id="display1">0</div> <!-- 가로형 숫자 표시창 (id: display1) -->
+
+    <div class="desktop-grid"> <!-- 가로형 버튼 그리드 영역 시작 -->
+      <div class="btn gray feature-button" data-mode="prime" onclick="activateFeatureMode('prime')">PRIME</div> <!-- 소수 판별 기능 버튼 -->
+      <div class="btn gray feature-button" data-mode="time" onclick="activateFeatureMode('time')">TIME</div> <!-- 시간 계산 기능 버튼 -->
+      <div class="btn light"  onclick="numberButton(7)">7</div> <!-- 숫자 7 버튼 -->
+      <div class="btn light"  onclick="numberButton(8)">8</div> <!-- 숫자 8 버튼 -->
+      <div class="btn light"  onclick="numberButton(9)">9</div> <!-- 숫자 9 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('/')">&#247;</div> <!-- 나누기 연산자 버튼 -->
+      <div class="btn gray"   onclick="r2Button()">R2</div> <!-- 소수 2자리 반올림 버튼 -->
+
+      <div class="btn gray feature-button" data-mode="rand" onclick="activateFeatureMode('rand')">RAND</div> <!-- 랜덤 숫자 생성 기능 버튼 -->
+      <div class="btn gray feature-button" data-mode="date" onclick="activateFeatureMode('date')">DATE</div> <!-- 날짜 계산 기능 버튼 -->
+      <div class="btn light"  onclick="numberButton(4)">4</div> <!-- 숫자 4 버튼 -->
+      <div class="btn light"  onclick="numberButton(5)">5</div> <!-- 숫자 5 버튼 -->
+      <div class="btn light"  onclick="numberButton(6)">6</div> <!-- 숫자 6 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('*')">&#215;</div> <!-- 곱하기 연산자 버튼 -->
+      <div class="btn gray"   onclick="r0Button()">R0</div> <!-- 정수 반올림 버튼 -->
+
+      <div class="btn gray"   onclick="piButton()"><span style="font-size:1.15em;line-height:1;">&#960;</span></div> <!-- 파이(π) 값 입력 버튼 -->
+      <div class="btn gray"   onclick="powerButton()"><span style="font-size:1.15em;line-height:1;">x<sup style="font-size:0.55em;line-height:0;position:relative;top:-0.2em;">y</sup></span></div> <!-- 거듭제곱 연산자 버튼 -->
+      <div class="btn light"  onclick="numberButton(1)">1</div> <!-- 숫자 1 버튼 -->
+      <div class="btn light"  onclick="numberButton(2)">2</div> <!-- 숫자 2 버튼 -->
+      <div class="btn light"  onclick="numberButton(3)">3</div> <!-- 숫자 3 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('-')">&#8722;</div> <!-- 빼기 연산자 버튼 -->
+      <div class="btn gray"   onclick="ceButton()">CE</div> <!-- 전체 초기화 버튼 -->
+
+      <div class="btn gray"   onclick="sqrtButton()">&#8730;x</div> <!-- 제곱근 버튼 -->
+      <div class="btn gray"   onclick="percentButton()">%</div> <!-- 퍼센트 버튼 -->
+      <div class="btn light"  onclick="numberButton(0)">0</div> <!-- 숫자 0 버튼 -->
+      <div class="btn light"  onclick="decimalButton()">.</div> <!-- 소수점 버튼 -->
+      <div class="btn light"  onclick="signButton()">+/&#8722;</div> <!-- 부호 반전 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('+')">+</div> <!-- 더하기 연산자 버튼 -->
+      <div class="btn yellow" onclick="equalsButton()">=</div> <!-- 결과 계산 버튼 -->
+    </div> <!-- 가로형 버튼 그리드 영역 끝 -->
+
+    <div class="footer">&lt;20233091-제시우&gt;</div> <!-- 가로형 학번·이름 표기 -->
+  </div> <!-- 가로형 계산기 끝 -->
+
+  <!-- ── 세로형(모바일) 계산기 ── -->
+  <div class="calculator mobile"> <!-- 세로형 계산기 컨테이너 -->
+    <div class="display" id="display2">0</div> <!-- 세로형 숫자 표시창 (id: display2) -->
+    <div class="mobile-grid"> <!-- 세로형 버튼 그리드 영역 시작 -->
+      <div class="btn gray feature-button" data-mode="prime" onclick="activateFeatureMode('prime')">PRIME</div> <!-- 소수 판별 기능 버튼 -->
+      <div class="btn gray feature-button" data-mode="time" onclick="activateFeatureMode('time')">TIME</div> <!-- 시간 계산 기능 버튼 -->
+      <div class="btn gray feature-button" data-mode="rand" onclick="activateFeatureMode('rand')">RAND</div> <!-- 랜덤 숫자 생성 기능 버튼 -->
+      <div class="btn gray feature-button" data-mode="date" onclick="activateFeatureMode('date')">DATE</div> <!-- 날짜 계산 기능 버튼 -->
+
+      <div class="btn gray"   onclick="ceButton()">CE</div> <!-- 전체 초기화 버튼 -->
+      <div class="btn gray"   onclick="sqrtButton()">&#8730;x</div> <!-- 제곱근 버튼 -->
+      <div class="btn gray"   onclick="percentButton()">%</div> <!-- 퍼센트 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('/')">&#247;</div> <!-- 나누기 연산자 버튼 -->
+
+      <div class="btn light"  onclick="numberButton(7)">7</div> <!-- 숫자 7 버튼 -->
+      <div class="btn light"  onclick="numberButton(8)">8</div> <!-- 숫자 8 버튼 -->
+      <div class="btn light"  onclick="numberButton(9)">9</div> <!-- 숫자 9 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('*')">&#215;</div> <!-- 곱하기 연산자 버튼 -->
+
+      <div class="btn light"  onclick="numberButton(4)">4</div> <!-- 숫자 4 버튼 -->
+      <div class="btn light"  onclick="numberButton(5)">5</div> <!-- 숫자 5 버튼 -->
+      <div class="btn light"  onclick="numberButton(6)">6</div> <!-- 숫자 6 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('-')">&#8722;</div> <!-- 빼기 연산자 버튼 -->
+
+      <div class="btn light"  onclick="numberButton(1)">1</div> <!-- 숫자 1 버튼 -->
+      <div class="btn light"  onclick="numberButton(2)">2</div> <!-- 숫자 2 버튼 -->
+      <div class="btn light"  onclick="numberButton(3)">3</div> <!-- 숫자 3 버튼 -->
+      <div class="btn yellow" onclick="operatorButton('+')">+</div> <!-- 더하기 연산자 버튼 -->
+
+      <div class="btn light"  onclick="numberButton(0)">0</div> <!-- 숫자 0 버튼 -->
+      <div class="btn light"  onclick="decimalButton()">.</div> <!-- 소수점 버튼 -->
+      <div class="btn light"  onclick="signButton()">+/&#8722;</div> <!-- 부호 반전 버튼 -->
+      <div class="btn yellow" onclick="equalsButton()">=</div> <!-- 결과 계산 버튼 -->
+
+      <div class="btn gray"   onclick="piButton()"><span style="font-size:1.15em;line-height:1;">&#960;</span></div> <!-- 파이(π) 값 입력 버튼 -->
+      <div class="btn gray"   onclick="powerButton()"><span style="font-size:1.15em;line-height:1;">x<sup style="font-size:0.55em;line-height:0;position:relative;top:-0.2em;">y</sup></span></div> <!-- 거듭제곱 연산자 버튼 -->
+      <div class="btn gray"   onclick="r2Button()">R2</div> <!-- 소수 2자리 반올림 버튼 -->
+      <div class="btn gray"   onclick="r0Button()">R0</div> <!-- 정수 반올림 버튼 -->
+    </div> <!-- 세로형 버튼 그리드 영역 끝 -->
+
+    <div class="footer">&lt;20233091-제시우&gt;</div> <!-- 세로형 학번·이름 표기 -->
+  </div> <!-- 세로형 계산기 끝 -->
+
+  <div class="feature-guide"> <!-- 기능 설명 영역 시작 -->
+    <div class="feature-guide-title">특수 기능 설명</div> <!-- 기능 설명 제목 -->
+    <div class="feature-overview"> <!-- 특수 기능 공통 개요 카드 -->
+      <div class="feature-overview-name">개요</div> <!-- 특수 기능 공통 개요 제목 -->
+      <div class="feature-overview-desc">특수 기능은 PRIME, TIME, RAND, DATE 버튼으로 각각 켜고 끌 수 있습니다.<br>기능을 켜면 표시값이 0으로 초기화되고 해당 기능 입력 방식으로 전환됩니다.(입력형식에 맞추어 입력할것!(Error발생))
+        <br>활성화된 기능 버튼은 색이 반전되어 현재 모드를 바로 확인할 수 있습니다.<br>같은 버튼을 다시 누르면 기능이 꺼지고 화면에 표시된 값은 유지한 채 일반 계산 모드로 돌아갑니다.</div> <!-- 특수 기능 공통 개요 설명 -->
+    </div>
+    <div class="feature-guide-grid"> <!-- 기능 설명 카드 배치 영역 -->
+      <div class="feature-card"> <!-- PRIME 기능 설명 카드 -->
+        <div class="feature-card-name">PRIME</div> <!-- PRIME 기능 이름 -->
+        <div class="feature-card-desc">입력한 정수가 소수인지 판별합니다.</div> <!-- PRIME 기능 설명 -->
+        <div class="feature-card-example">예시: PRIME → 37 → = → 소수</div> <!-- PRIME 사용 예시 -->
+      </div>
+      <div class="feature-card"> <!-- TIME 기능 설명 카드 -->
+        <div class="feature-card-name">TIME</div> <!-- TIME 기능 이름 -->
+        <div class="feature-card-desc">시간을 HH.MM 형식으로 입력하고 + 또는 - 로 계산합니다. 결과 표시(HH:MM 형식)</div> <!-- TIME 기능 설명 -->
+        <div class="feature-card-example">예시: TIME → 04.24 + 01.36 = → 06:00</div> <!-- TIME 사용 예시 -->
+      </div>
+      <div class="feature-card"> <!-- RAND 기능 설명 카드 -->
+        <div class="feature-card-name">RAND</div> <!-- RAND 기능 이름 -->
+        <div class="feature-card-desc">입력한 숫자를 자릿수로 보고 랜덤 숫자를 생성합니다. - 를 누르면 같은 자릿수의 음수 영역의 랜덤값을 만듭니다.</div> <!-- RAND 기능 설명 -->
+        <div class="feature-card-example">예시: RAND → 3 = → 000~999 중 하나 / RAND → 3 - = → 000~-999 중 하나</div> <!-- RAND 사용 예시 -->
+      </div>
+      <div class="feature-card"> <!-- DATE 기능 설명 카드 -->
+        <div class="feature-card-name">DATE</div> <!-- DATE 기능 이름 -->
+        <div class="feature-card-desc">날짜를 YYYY.MM.DD 형식으로 입력한 뒤 + 또는 - 로 계산합니다. 두 번째 값은 기간 YYYY.MM.DD 또는 일수 숫자로 입력할 수 있습니다.</div> <!-- DATE 기능 설명 -->
+        <div class="feature-card-example">예시: DATE → 2023.04.12 + 5 = → 2023.04.17 / DATE → 2023.04.12 + 0003.09.12 = → 2027.01.24</div> <!-- DATE 사용 예시 -->
+      </div>
+    </div>
+  </div> <!-- 기능 설명 영역 끝 -->
+
+</div> <!-- 전체 래퍼 끝 -->
+
+<script>
+  var currentDisplay = '0'; // 현재 표시창에 보이는 값(문자열)을 저장
+  var prevValue = null; // 연산자 입력 전 저장해 둔 이전 값을 저장
+  var currentOperator = null; // 현재 선택된 연산자를 저장
+  var waitForOperand = false; // 다음 숫자 입력 시 화면을 교체할지 여부를 저장
+  var currentMode = 'normal'; // 현재 활성화된 기능 모드를 저장
+  var featureInputStarted = false; // 기능 모드에서 사용자가 실제 입력을 시작했는지 저장
+
+  function updateDisplay(val) // 두 표시창을 동시에 갱신하는 함수
+  {
+    currentDisplay = String(val); // 전달받은 값을 문자열로 변환하여 저장
+    document.getElementById('display1').innerHTML = currentDisplay; // 가로형 표시창을 업데이트
+    document.getElementById('display2').innerHTML = currentDisplay; // 세로형 표시창을 업데이트
+  }
+
+  function formatResult(val) // 부동소수점 오차를 제거하고 문자열로 반환하는 함수
+  {
+    if (typeof val === 'string') // 값이 문자열이면
+    {
+      return val; // 문자열을 그대로 반환
+    }
+
+    var cleaned = parseFloat(val.toPrecision(12)); // 유효숫자 12자리로 반올림하여 오차를 줄임
+    return String(cleaned); // 문자열로 변환하여 반환
+  }
+
+  function resetCalculationState() // 계산 상태를 CE처럼 초기화하는 함수
+  {
+    updateDisplay('0'); // 표시창을 0으로 초기화
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 현재 연산자를 초기화
+    waitForOperand = false; // 대기 상태를 해제
+    featureInputStarted = false; // 기능 모드 입력 시작 여부를 초기화
+  }
+
+  function applyFeatureButtonState() // 현재 활성화된 기능 버튼의 색상을 반전시키는 함수
+  {
+    var featureButtons = document.querySelectorAll('.feature-button'); // 모든 기능 버튼을 선택
+
+    featureButtons.forEach(function(button) // 모든 기능 버튼을 하나씩 확인
+    {
+      button.classList.remove('feature-active'); // 먼저 활성화 스타일을 제거
+    });
+
+    if (currentMode === 'normal') // 일반 계산기 모드이면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var activeButtons = document.querySelectorAll('.feature-button[data-mode="' + currentMode + '"]'); // 현재 모드와 같은 버튼만 선택
+
+    activeButtons.forEach(function(button) // 현재 모드에 해당하는 버튼을 하나씩 확인
+    {
+      button.classList.add('feature-active'); // 활성화 스타일을 추가
+    });
+  }
+
+  function clearCalculationContextKeepDisplay() // 표시값은 유지하고 계산 상태만 초기화하는 함수
+  {
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 현재 연산자를 초기화
+    waitForOperand = false; // 대기 상태를 해제
+    featureInputStarted = false; // 기능 모드 입력 시작 여부를 초기화
+  }
+
+  function activateFeatureMode(mode) // 기능 버튼을 눌렀을 때 모드를 전환하는 함수
+  {
+    if (currentMode === mode) // 이미 같은 기능이 활성화된 상태이면
+    {
+      currentMode = 'normal'; // 일반 계산기 모드로 되돌림
+      clearCalculationContextKeepDisplay(); // 표시값은 유지하고 계산 상태만 초기화
+      applyFeatureButtonState(); // 버튼 색상 상태를 갱신
+      return; // 함수 실행을 종료
+    }
+
+    currentMode = mode; // 새 기능 모드로 변경
+    resetCalculationState(); // 이전 계산 내용을 CE처럼 초기화
+    applyFeatureButtonState(); // 버튼 색상 상태를 갱신
+  }
+
+  function isSpecialFeatureMode() // 일반 계산이 아닌 특수 기능 모드인지 확인하는 함수
+  {
+    return currentMode === 'prime' || currentMode === 'time' || currentMode === 'rand' || currentMode === 'date'; // 기능 모드 여부를 반환
+  }
+
+  function shouldReplaceDisplayOnNumberInput() // 숫자 입력 시 기존 표시값을 새 숫자로 바꿔야 하는지 확인하는 함수
+  {
+    if (waitForOperand) // 다음 피연산자를 기다리는 상태이면
+    {
+      return true; // 표시값을 교체해야 함
+    }
+
+    if (currentDisplay === '0') // 현재 표시값이 0이면
+    {
+      if (isSpecialFeatureMode() && featureInputStarted) // 기능 모드에서 이미 0 입력을 시작한 상태이면
+      {
+        return false; // 뒤에 숫자를 이어 붙일 수 있게 유지
+      }
+
+      return true; // 표시값을 교체해야 함
+    }
+
+    if (currentDisplay === 'Error') // 오류 표시 상태이면
+    {
+      return true; // 표시값을 교체해야 함
+    }
+
+    if (currentDisplay === '소수') // PRIME 결과가 소수이면
+    {
+      return true; // 표시값을 교체해야 함
+    }
+
+    if (currentDisplay === '소수 아님') // PRIME 결과가 소수가 아니면
+    {
+      return true; // 표시값을 교체해야 함
+    }
+
+    return false; // 기존 값 뒤에 이어 붙여도 됨
+  }
+
+  function canAppendNumberInCurrentMode() // 현재 모드에서 숫자를 더 입력할 수 있는지 확인하는 함수
+  {
+    if (currentMode === 'time' && !waitForOperand) // TIME 모드에서 시간 형식 입력 제한을 검사하면
+    {
+      if (currentDisplay.indexOf(':') !== -1) // 결과 표시인 HH:MM 상태이면
+      {
+        return false; // 숫자 이어 입력을 막음
+      }
+
+      if (currentDisplay.indexOf('.') === -1 && currentDisplay.length >= 2) // 점이 없고 시가 이미 두 자리이면
+      {
+        return false; // 더 이상 숫자 입력을 막음
+      }
+
+      if (currentDisplay.indexOf('.') !== -1) // 이미 점이 입력된 상태이면
+      {
+        var timeParts = currentDisplay.split('.'); // 점 기준으로 시와 분을 나눔
+        var minutesDigits = timeParts[1] || ''; // 점 뒤 분 자리 문자열을 저장
+
+        if (minutesDigits.length >= 2) // 분이 이미 두 자리까지 입력되었으면
+        {
+          return false; // 더 이상 숫자 입력을 막음
+        }
+      }
+    }
+
+    if (currentMode === 'date' && !waitForOperand) // DATE 모드에서 날짜 입력 제한을 검사하면
+    {
+      if (currentDisplay === 'Error') // 오류 표시 상태이면
+      {
+        return true; // 새 숫자로 다시 입력할 수 있게 허용
+      }
+
+      if (currentDisplay.indexOf('.') !== -1) // 점이 포함된 날짜 또는 기간 입력 상태이면
+      {
+        var normalizedDateDigits = currentDisplay.replace(/\./g, ''); // 점을 제거한 순수 숫자 문자열을 저장
+        var dateParts = currentDisplay.split('.'); // 점 기준으로 연, 월, 일을 나눔
+
+        if (normalizedDateDigits.length >= 8) // 전체 숫자가 이미 8자리이면
+        {
+          return false; // 더 이상 숫자 입력을 막음
+        }
+
+        if (dateParts.length === 1 && dateParts[0].length >= 4) // 점 앞 연도 자리가 이미 4자리이면
+        {
+          return false; // 연도 숫자 추가를 막음
+        }
+
+        if (dateParts.length === 2 && dateParts[1].length >= 2) // 첫 번째 점 뒤 월 자리가 이미 2자리이면
+        {
+          return false; // 월 숫자 추가를 막음
+        }
+
+        if (dateParts.length === 3 && dateParts[2].length >= 2) // 두 번째 점 뒤 일 자리가 이미 2자리이면
+        {
+          return false; // 일 숫자 추가를 막음
+        }
+      }
+      else if (currentOperator === null && currentDisplay.length >= 8) // 첫 번째 날짜를 점 없이 입력 중이고 8자리를 채웠으면
+      {
+        return false; // 더 이상 숫자 입력을 막음
+      }
+    }
+
+    return true; // 그 외에는 입력 가능
+  }
+
+
+  function numberButton(num) // 숫자 버튼 클릭 시 호출되는 함수
+  {
+    if (!canAppendNumberInCurrentMode()) // 현재 모드에서 숫자를 더 붙일 수 없으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    if (shouldReplaceDisplayOnNumberInput()) // 새 입력으로 표시값을 교체해야 하면
+    {
+      if (isSpecialFeatureMode() && currentDisplay === '0' && !featureInputStarted && num === 0) // 기능 모드에서 첫 입력이 0이면
+      {
+        updateDisplay('0'); // 앞자리 0 입력 상태를 그대로 유지
+      }
+      else // 그 외에는 입력한 숫자로 화면을 교체
+      {
+        updateDisplay(String(num)); // 입력한 숫자로 표시창을 교체
+      }
+
+      waitForOperand = false; // 대기 상태를 해제
+      featureInputStarted = true; // 사용자가 실제 입력을 시작했음을 기록
+      return; // 함수 실행을 종료
+    }
+
+    updateDisplay(currentDisplay + String(num)); // 기존 값 뒤에 숫자를 이어 붙임
+    featureInputStarted = true; // 사용자가 실제 입력을 시작했음을 기록
+  }
+
+  function decimalButton() // 소수점 버튼 클릭 시 호출되는 함수
+  {
+    if (currentMode === 'time') // TIME 모드이면 점을 시간 구분 기호로 사용
+    {
+      if (waitForOperand) // 연산자 입력 직후이면
+      {
+        updateDisplay('0.'); // 0시 입력부터 시작할 수 있게 0.을 표시
+        waitForOperand = false; // 대기 상태를 해제
+        featureInputStarted = true; // 사용자가 실제 입력을 시작했음을 기록
+        return; // 함수 실행을 종료
+      }
+
+      if (currentDisplay === 'Error' || currentDisplay.indexOf(':') !== -1) // 오류 상태이거나 결과 표시 상태이면
+      {
+        return; // 함수 실행을 종료
+      }
+
+      if (currentDisplay.indexOf('.') !== -1) // 이미 점이 있으면
+      {
+        return; // 함수 실행을 종료
+      }
+
+      if (currentDisplay.length === 0 || currentDisplay.length > 2) // 점 앞 시 자리가 1~2자리가 아니면
+      {
+        return; // 함수 실행을 종료
+      }
+
+      updateDisplay(currentDisplay + '.'); // 시와 분을 구분하는 점을 추가
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'date') // DATE 모드이면 점을 날짜 구분 기호로 사용
+    {
+      if (waitForOperand) // 연산자 입력 직후이면
+      {
+        return; // 빈 상태에서 점부터 입력하지 못하게 막음
+      }
+
+      if (currentDisplay === 'Error') // 오류 상태이면
+      {
+        return; // 함수 실행을 종료
+      }
+
+      var dateParts = currentDisplay.split('.'); // 현재 입력값을 점 기준으로 나눔
+
+      if (dateParts.length === 1) // 아직 점이 하나도 없으면
+      {
+        if (dateParts[0].length !== 4) // 연도 4자리를 다 입력하지 않았으면
+        {
+          return; // 첫 번째 점 입력을 막음
+        }
+
+        updateDisplay(currentDisplay + '.'); // 연도 뒤에 첫 번째 점을 추가
+        featureInputStarted = true; // 사용자가 실제 입력을 시작했음을 기록
+        return; // 함수 실행을 종료
+      }
+
+      if (dateParts.length === 2) // 점이 하나만 입력된 상태이면
+      {
+        if (dateParts[1].length !== 2) // 월 2자리를 다 입력하지 않았으면
+        {
+          return; // 두 번째 점 입력을 막음
+        }
+
+        updateDisplay(currentDisplay + '.'); // 월 뒤에 두 번째 점을 추가
+        featureInputStarted = true; // 사용자가 실제 입력을 시작했음을 기록
+        return; // 함수 실행을 종료
+      }
+
+      return; // 이미 두 개의 점이 있으면 더 이상 추가하지 않음
+    }
+
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 소수점을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    if (waitForOperand) // 연산자 입력 후 대기 중이면
+    {
+      updateDisplay('0.'); // 소수점 입력을 0.으로 시작
+      waitForOperand = false; // 대기 상태를 해제
+      return; // 함수 실행을 종료
+    }
+
+    if (currentDisplay.indexOf('.') === -1) // 이미 소수점이 없을 때만
+    {
+      updateDisplay(currentDisplay + '.'); // 현재 값 뒤에 소수점을 추가
+    }
+  }
+
+
+  function calculate(a, b, op) // 일반 계산기용 두 숫자 연산 함수
+  {
+    if (op === '+') // 더하기 연산이면
+    {
+      return a + b; // 두 수를 더한 값을 반환
+    }
+
+    if (op === '-') // 빼기 연산이면
+    {
+      return a - b; // 두 수를 뺀 값을 반환
+    }
+
+    if (op === '*') // 곱하기 연산이면
+    {
+      return a * b; // 두 수를 곱한 값을 반환
+    }
+
+    if (op === '/') // 나누기 연산이면
+    {
+      if (b === 0) // 0으로 나누면
+      {
+        return 'Error'; // 오류 문자열을 반환
+      }
+
+      return a / b; // 두 수를 나눈 값을 반환
+    }
+
+    if (op === 'pow') // 거듭제곱 연산이면
+    {
+      return Math.pow(a, b); // a의 b제곱을 반환
+    }
+
+    return b; // 해당 연산자가 없으면 b를 그대로 반환
+  }
+
+  function parseDateInput(dateString) // YYYYMMDD 또는 YYYY.MM.DD 형식의 날짜 문자열을 Date 객체로 바꾸는 함수
+  {
+    var normalized = String(dateString).replace(/\./g, ''); // 점을 제거한 8자리 숫자 문자열을 준비
+
+    if (!/^\d{8}$/.test(normalized)) // 8자리 숫자가 아니면
+    {
+      return null; // 잘못된 입력으로 처리
+    }
+
+    var year = Number(normalized.substring(0, 4)); // 앞 4자리를 연도로 저장
+    var month = Number(normalized.substring(4, 6)); // 다음 2자리를 월로 저장
+    var day = Number(normalized.substring(6, 8)); // 마지막 2자리를 일로 저장
+    var date = new Date(year, month - 1, day); // Date 객체를 생성
+
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) // 실제 달력 기준으로 잘못된 날짜이면
+    {
+      return null; // 잘못된 입력으로 처리
+    }
+
+    return date; // 올바른 날짜 객체를 반환
+  }
+
+  function formatDateResult(date) // Date 객체를 YYYY.MM.DD 문자열로 바꾸는 함수
+  {
+    var year = String(date.getFullYear()).padStart(4, '0'); // 연도를 4자리 문자열로 저장
+    var month = String(date.getMonth() + 1).padStart(2, '0'); // 월을 두 자리 문자열로 저장
+    var day = String(date.getDate()).padStart(2, '0'); // 일을 두 자리 문자열로 저장
+
+    return year + '.' + month + '.' + day; // 날짜 문자열을 반환
+  }
+
+  function parseDateDurationInput(durationString) // 기간 입력값을 연, 월, 일 또는 일수로 해석하는 함수
+  {
+    var rawValue = String(durationString); // 전달받은 값을 문자열로 통일
+
+    if (/^\d+$/.test(rawValue)) // 숫자만 입력되었으면
+    {
+      return { type: 'days', days: Number(rawValue) }; // 일수만 더하는 기간으로 반환
+    }
+
+    var normalized = rawValue.replace(/\./g, ''); // 점을 제거한 순수 숫자 문자열을 준비
+
+    if (!/^\d{8}$/.test(normalized)) // 8자리 숫자가 아니면
+    {
+      return null; // 잘못된 입력으로 처리
+    }
+
+    return {
+      type: 'ymd', // 연, 월, 일 기간 타입으로 표시
+      years: Number(normalized.substring(0, 4)), // 앞 4자리를 연수로 저장
+      months: Number(normalized.substring(4, 6)), // 다음 2자리를 월수로 저장
+      days: Number(normalized.substring(6, 8)) // 마지막 2자리를 일수로 저장
+    }; // 기간 객체를 반환
+  }
+
+  function applyYearMonthDayDelta(baseDate, years, months, days, sign) // 기준 날짜에 연, 월, 일 단위 기간을 적용하는 함수
+  {
+    var resultDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1); // 기준 날짜를 월의 1일로 복사
+    var originalDay = baseDate.getDate(); // 원래 날짜의 일을 저장
+
+    resultDate.setFullYear(resultDate.getFullYear() + (years * sign)); // 연도 차이를 먼저 적용
+    resultDate.setMonth(resultDate.getMonth() + (months * sign)); // 월 차이를 적용
+    var maxDay = new Date(resultDate.getFullYear(), resultDate.getMonth() + 1, 0).getDate(); // 결과 월의 마지막 일을 계산
+    resultDate.setDate(Math.min(originalDay, maxDay)); // 원래 일자를 유지하되 월 마지막 일을 넘지 않게 맞춤
+    resultDate.setDate(resultDate.getDate() + (days * sign)); // 마지막으로 일수 차이를 적용
+
+    return resultDate; // 계산된 날짜를 반환
+  }
+
+  function applyDateDelta(baseDate, durationInfo, operator) // 기준 날짜에 기간 또는 일수를 더하거나 빼는 함수
+  {
+    var sign = operator === '-' ? -1 : 1; // 빼기면 -1, 더하기면 1로 저장
+
+    if (durationInfo.type === 'days') // 일수만 입력된 경우이면
+    {
+      var dayResult = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate()); // 기준 날짜를 복사
+      dayResult.setDate(dayResult.getDate() + (durationInfo.days * sign)); // 일수만큼 더하거나 뺌
+      return dayResult; // 계산된 날짜를 반환
+    }
+
+    return applyYearMonthDayDelta(baseDate, durationInfo.years, durationInfo.months, durationInfo.days, sign); // 연, 월, 일 단위 기간 계산 결과를 반환
+  }
+
+  function parseTimeInput(timeString) // HH.MM 또는 HH:MM 형식의 시간을 총 분으로 바꾸는 함수
+  {
+    if (!/^\d{1,2}[\.:]\d{2}$/.test(timeString)) // 시 1~2자리와 분 2자리 형식이 아니면
+    {
+      return null; // 잘못된 입력으로 처리
+    }
+
+    var normalized = timeString.replace(':', '.'); // 계산 결과의 콜론 표기도 점 형식으로 통일
+    var timeParts = normalized.split('.'); // 점 기준으로 시와 분을 나눔
+    var hours = Number(timeParts[0]); // 시를 숫자로 변환
+    var minutes = Number(timeParts[1]); // 분을 숫자로 변환
+
+    if (minutes >= 60) // 분이 60 이상이면
+    {
+      return null; // 잘못된 입력으로 처리
+    }
+
+    return (hours * 60) + minutes; // 총 분 단위로 변환하여 반환
+  }
+
+  function formatTimeResult(totalMinutes) // 총 분 값을 HH:MM 문자열로 바꾸는 함수
+  {
+    var sign = ''; // 음수 표기를 위한 부호 문자열을 저장
+
+    if (totalMinutes < 0) // 결과가 음수이면
+    {
+      sign = '-'; // 앞에 마이너스 기호를 붙이도록 저장
+      totalMinutes = Math.abs(totalMinutes); // 절댓값으로 변환
+    }
+
+    var hours = Math.floor(totalMinutes / 60); // 시간을 계산
+    var minutes = totalMinutes % 60; // 남은 분을 계산
+
+    return sign + String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0'); // HH:MM 형식 문자열을 반환
+  }
+
+  function executePrimeMode() // PRIME 모드에서 소수 판별을 수행하는 함수
+  {
+    var value = Number(currentDisplay); // 현재 표시값을 숫자로 변환
+
+    if (!Number.isInteger(value) || value < 2) // 2보다 작은 수이거나 정수가 아니면
+    {
+      updateDisplay('소수 아님'); // 소수가 아님을 표시
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      prevValue = null; // 이전 값을 초기화
+      currentOperator = null; // 연산자를 초기화
+      return; // 함수 실행을 종료
+    }
+
+    var limit = Math.floor(Math.sqrt(value)); // 검사해야 할 최대 약수를 계산
+    var isPrime = true; // 소수 여부를 기본적으로 true로 저장
+
+    for (var i = 2; i <= limit; i += 1) // 2부터 최대 약수까지 반복
+    {
+      if (value % i === 0) // 나누어떨어지는 값이 있으면
+      {
+        isPrime = false; // 소수가 아니라고 표시
+        break; // 반복을 종료
+      }
+    }
+
+    if (isPrime) // 소수이면
+    {
+      updateDisplay('소수'); // 소수라고 표시
+    }
+    else // 소수가 아니면
+    {
+      updateDisplay('소수 아님'); // 소수가 아니라고 표시
+    }
+
+    waitForOperand = true; // 다음 입력을 새로 받도록 설정
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 연산자를 초기화
+  }
+
+  function executeRandMode() // RAND 모드에서 자릿수 기준 랜덤 숫자를 생성하는 함수
+  {
+    var digitLength = Number(currentDisplay); // 현재 표시값을 만들 자릿수로 사용
+
+    if (!Number.isInteger(digitLength) || digitLength < 1) // 1 이상의 정수가 아니면
+    {
+      updateDisplay('Error'); // 오류를 표시
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      prevValue = null; // 이전 값을 초기화
+      currentOperator = null; // 연산자를 초기화
+      return; // 함수 실행을 종료
+    }
+
+    var randomDigits = ''; // 랜덤 숫자 문자열을 저장할 변수를 준비
+
+    for (var i = 0; i < digitLength; i += 1) // 입력한 자릿수만큼 반복하면
+    {
+      randomDigits += String(Math.floor(Math.random() * 10)); // 0부터 9 사이 숫자 한 자리를 이어 붙임
+    }
+
+    if (currentOperator === '-') // 음수 랜덤 모드가 선택된 상태이면
+    {
+      if (Number(randomDigits) === 0) // 생성된 값이 0이면
+      {
+        updateDisplay(randomDigits); // 0은 음수 부호 없이 그대로 표시
+      }
+      else // 생성된 값이 0이 아니면
+      {
+        updateDisplay('-' + randomDigits); // 앞에 음수 부호를 붙여 표시
+      }
+    }
+    else // 양수 랜덤 모드이거나 부호가 선택되지 않았으면
+    {
+      updateDisplay(randomDigits); // 생성한 자릿수 기준 랜덤 숫자를 표시
+    }
+
+    waitForOperand = true; // 다음 입력을 새로 받도록 설정
+    featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 연산자를 초기화
+  }
+
+  function executeDateMode() // DATE 모드에서 날짜 계산을 수행하는 함수
+  {
+    if (prevValue === null || currentOperator === null) // 아직 날짜와 연산자가 준비되지 않았으면
+    {
+      var singleDate = parseDateInput(currentDisplay); // 현재 입력값을 날짜로 해석
+
+      if (singleDate === null) // 날짜 해석이 실패하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+      }
+      else // 날짜 해석이 성공하면
+      {
+        updateDisplay(formatDateResult(singleDate)); // 형식을 맞춰 날짜를 표시
+      }
+
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+      return; // 함수 실행을 종료
+    }
+
+    var durationInfo = parseDateDurationInput(currentDisplay); // 현재 표시값을 날짜 기간 또는 일수로 해석
+
+    if (durationInfo === null) // 기간 해석이 실패하면
+    {
+      updateDisplay('Error'); // 오류를 표시
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      prevValue = null; // 이전 값을 초기화
+      currentOperator = null; // 연산자를 초기화
+      return; // 함수 실행을 종료
+    }
+
+    var resultDate = applyDateDelta(prevValue, durationInfo, currentOperator); // 날짜 계산 결과를 저장
+
+    updateDisplay(formatDateResult(resultDate)); // 계산 결과 날짜를 표시
+    waitForOperand = true; // 다음 입력을 새로 받도록 설정
+    featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 연산자를 초기화
+  }
+
+
+  function executeTimeMode() // TIME 모드에서 시간 계산을 수행하는 함수
+  {
+    if (prevValue === null || currentOperator === null) // 아직 첫 번째 시간과 연산자가 준비되지 않았으면
+    {
+      var singleMinutes = parseTimeInput(currentDisplay); // 현재 입력값을 시간으로 해석
+
+      if (singleMinutes === null) // 시간 해석이 실패하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+      }
+      else // 시간 해석이 성공하면
+      {
+        updateDisplay(formatTimeResult(singleMinutes)); // HH:MM 형식으로 표시
+      }
+
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+      return; // 함수 실행을 종료
+    }
+
+    var currentMinutes = parseTimeInput(currentDisplay); // 현재 입력값을 분 단위로 변환
+
+    if (currentMinutes === null) // 시간 해석이 실패하면
+    {
+      updateDisplay('Error'); // 오류를 표시
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      prevValue = null; // 이전 값을 초기화
+      currentOperator = null; // 연산자를 초기화
+      return; // 함수 실행을 종료
+    }
+
+    var resultMinutes = 0; // 계산 결과 총 분 값을 저장
+
+    if (currentOperator === '+') // 더하기 연산이면
+    {
+      resultMinutes = prevValue + currentMinutes; // 두 시간 값을 더함
+    }
+    else if (currentOperator === '-') // 빼기 연산이면
+    {
+      resultMinutes = prevValue - currentMinutes; // 두 시간 값을 뺌
+    }
+    else // 허용되지 않은 연산이면
+    {
+      updateDisplay('Error'); // 오류를 표시
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      prevValue = null; // 이전 값을 초기화
+      currentOperator = null; // 연산자를 초기화
+      return; // 함수 실행을 종료
+    }
+
+    updateDisplay(formatTimeResult(resultMinutes)); // 계산 결과를 HH:MM 형식으로 표시
+    waitForOperand = true; // 다음 입력을 새로 받도록 설정
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 연산자를 초기화
+  }
+
+  function operatorButton(op) // 연산자 버튼 클릭 시 호출되는 함수
+  {
+    if (currentMode === 'date') // DATE 모드이면
+    {
+      if (op !== '+' && op !== '-') // DATE 모드에서는 +와 -만 허용하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+        waitForOperand = true; // 다음 입력을 새로 받도록 설정
+        prevValue = null; // 이전 값을 초기화
+        currentOperator = null; // 연산자를 초기화
+        return; // 함수 실행을 종료
+      }
+
+      var baseDate = parseDateInput(currentDisplay); // 현재 표시값을 날짜로 해석
+
+      if (baseDate === null) // 날짜 해석이 실패하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+        waitForOperand = true; // 다음 입력을 새로 받도록 설정
+        prevValue = null; // 이전 값을 초기화
+        currentOperator = null; // 연산자를 초기화
+        return; // 함수 실행을 종료
+      }
+
+      prevValue = baseDate; // 기준 날짜를 이전 값으로 저장
+      currentOperator = op; // 현재 연산자를 저장
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'time') // TIME 모드이면
+    {
+      if (op !== '+' && op !== '-') // TIME 모드에서는 +와 -만 허용하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+        waitForOperand = true; // 다음 입력을 새로 받도록 설정
+        prevValue = null; // 이전 값을 초기화
+        currentOperator = null; // 연산자를 초기화
+        return; // 함수 실행을 종료
+      }
+
+      var baseMinutes = parseTimeInput(currentDisplay); // 현재 표시값을 시간으로 해석
+
+      if (baseMinutes === null) // 시간 해석이 실패하면
+      {
+        updateDisplay('Error'); // 오류를 표시
+        waitForOperand = true; // 다음 입력을 새로 받도록 설정
+        prevValue = null; // 이전 값을 초기화
+        currentOperator = null; // 연산자를 초기화
+        return; // 함수 실행을 종료
+      }
+
+      prevValue = baseMinutes; // 기준 시간을 총 분 값으로 저장
+      currentOperator = op; // 현재 연산자를 저장
+      waitForOperand = true; // 다음 입력을 새로 받도록 설정
+      featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'prime') // PRIME 모드이면
+    {
+      return; // 일반 연산자는 사용하지 않음
+    }
+
+    if (currentMode === 'rand') // RAND 모드이면
+    {
+      if (op === '+' || op === '-') // RAND 모드에서는 + 또는 -로 부호 범위를 선택할 수 있으면
+      {
+        currentOperator = op; // 현재 연산자 칸에 RAND 부호 정보를 저장
+      }
+      return; // RAND 모드에서는 일반 연산을 수행하지 않음
+    }
+
+    var current = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+
+    if (currentOperator !== null && !waitForOperand) // 이미 연산자가 있고 새 숫자가 입력된 경우이면
+    {
+      var result = calculate(prevValue, current, currentOperator); // 연속 계산을 수행
+
+      if (typeof result === 'string') // 결과가 오류 문자열이면
+      {
+        updateDisplay(result); // 오류를 표시
+        prevValue = 0; // 이전 값을 0으로 초기화
+      }
+      else // 결과가 정상 숫자이면
+      {
+        updateDisplay(formatResult(result)); // 계산 결과를 표시
+        prevValue = result; // 결과를 이전 값으로 저장
+      }
+    }
+    else // 첫 번째 연산자 입력이거나 연산자 연속 입력이면
+    {
+      prevValue = current; // 현재 표시값을 이전 값으로 저장
+    }
+
+    currentOperator = op; // 새 연산자를 저장
+    waitForOperand = true; // 다음 숫자 입력을 대기
+    featureInputStarted = false; // 다음 입력을 새로 시작할 수 있게 설정
+  }
+
+  function equalsButton() // 결과(=) 버튼 클릭 시 호출되는 함수
+  {
+    if (currentMode === 'prime') // PRIME 모드이면
+    {
+      executePrimeMode(); // 소수 판별을 실행
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'rand') // RAND 모드이면
+    {
+      executeRandMode(); // 랜덤 숫자 생성을 실행
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'date') // DATE 모드이면
+    {
+      executeDateMode(); // 날짜 계산을 실행
+      return; // 함수 실행을 종료
+    }
+
+    if (currentMode === 'time') // TIME 모드이면
+    {
+      executeTimeMode(); // 시간 계산을 실행
+      return; // 함수 실행을 종료
+    }
+
+    if (currentOperator === null) // 일반 계산 모드에서 연산자가 없으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var current = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+    var result = calculate(prevValue, current, currentOperator); // 최종 계산을 수행
+
+    if (typeof result === 'string') // 결과가 오류 문자열이면
+    {
+      updateDisplay(result); // 오류 메시지를 표시
+    }
+    else // 결과가 정상 숫자이면
+    {
+      updateDisplay(formatResult(result)); // 결과값을 표시
+    }
+
+    prevValue = null; // 이전 값을 초기화
+    currentOperator = null; // 연산자를 초기화
+    waitForOperand = true; // 다음 입력을 대기
+  }
+
+  function ceButton() // CE 버튼: 계산기 전체 상태 초기화
+  {
+    resetCalculationState(); // 계산 상태를 초기화
+  }
+
+  function signButton() // +/- 버튼: 현재 값의 부호를 반전하는 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 부호 반전을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var val = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+    updateDisplay(formatResult(-val)); // 부호를 반전하여 표시
+  }
+
+  function percentButton() // % 버튼: 현재 값을 100으로 나누는 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 퍼센트를 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var val = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+    updateDisplay(formatResult(val / 100)); // 퍼센트 결과를 표시
+    waitForOperand = true; // 다음 입력을 대기
+  }
+
+  function sqrtButton() // √x 버튼: 현재 값의 제곱근을 계산하는 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 제곱근을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var val = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+
+    if (val < 0) // 음수이면
+    {
+      updateDisplay('Error'); // 오류를 표시
+    }
+    else // 양수이면
+    {
+      updateDisplay(formatResult(Math.sqrt(val))); // 제곱근 결과를 표시
+    }
+
+    waitForOperand = true; // 다음 입력을 대기
+  }
+
+  function piButton() // π 버튼: 원주율 값을 입력하는 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 원주율 입력을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    updateDisplay(String(Math.PI)); // 파이 값을 표시
+    waitForOperand = false; // 숫자가 입력된 상태로 전환
+  }
+
+  function powerButton() // xʸ 버튼: 거듭제곱 연산자를 등록하는 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 거듭제곱을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    operatorButton('pow'); // 거듭제곱 연산자를 전달
+  }
+
+  function r2Button() // R2 버튼: 소수 둘째 자리 반올림 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 반올림을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var val = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+    var rounded = Math.round(val * 100) / 100; // 소수 둘째 자리에서 반올림
+    updateDisplay(String(rounded)); // 반올림 결과를 표시
+    waitForOperand = true; // 다음 입력을 대기
+  }
+
+  function r0Button() // R0 버튼: 정수 반올림 함수
+  {
+    if (isSpecialFeatureMode()) // 특수 기능 모드에서는 반올림을 사용하지 않으면
+    {
+      return; // 함수 실행을 종료
+    }
+
+    var val = parseFloat(currentDisplay); // 현재 표시값을 숫자로 변환
+    updateDisplay(String(Math.round(val))); // 정수 반올림 결과를 표시
+    waitForOperand = true; // 다음 입력을 대기
+  }
+
+  applyFeatureButtonState(); // 페이지가 열릴 때 기능 버튼 상태를 한 번 맞춤
+</script> <!-- JavaScript 끝 -->
+</body> <!-- 바디 영역 끝 -->
+</html> <!-- HTML 문서 끝 -->
